@@ -46,7 +46,7 @@ app.use(express.urlencoded ({
 // - 4 sql tables: one for username + password +  user id + position + group id (if any) 
 //                 one for location id, location name
 //                 one for store id, location id (for the store location), user id (for the owner of the store), store name, store picture and comments section id
-//                 one for messages id, group id, store id, text, date, favourites
+//                 one for messages id, location id, store id, text, date, favourites
 //                 one for comments id, store id, owner(user id),  comments text, likes count
 // - 4 (? may add more) positions. 
 // - Projected pages: Login page, Home page (*display all groups existing + admin messages), Group page (to display data), Adding page, Editing page, 
@@ -65,13 +65,12 @@ app.use(express.urlencoded ({
     //
     //    -  Group Members can CRUD their OWN messages in the group they belong to, and the rest is the same as a group user. 
     //      - They are the shop/stall owners (McDonald's, KFC, etc)
-    //      - Group members can register for comment removal, but it is up to the group owner to decide whether they want to remove or not. 
     //
     //    -  Normal users can: 
     //      - They can CRUD their own comments 
     //      - They are the normal users of the website. 
     // 
-    //    - Non-authorised users can only read, they cannot do anything else. 
+    //    - Non-authorised users can only read; they cannot do anything else. 
 
 //    - Regardless, remember to ensure that the SQL table (for data) can accept it. 
 
