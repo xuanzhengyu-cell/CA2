@@ -50,11 +50,9 @@ app.use(express.urlencoded ({
 // - Projected pages: Login page, Home page (*display all groups existing + admin messages), Group page (to display data), Adding page, Editing page, 
 //                    Admin's Page (for site mods), Group Owner Page (for group page mods), (? more to be added)
 
-
-// Route: Login page and Home page (along with user verification)
 //   - Typically: 
-    //    - Site Admins can CRUD everything, plus give other users permission up to Admin. 
-    //      - They also can hold the permission to create a new group. 
+    //    - Site Admins can CRUD everything and grant other users up to Admin permissions. 
+    //      - They can also hold permission to create a new group. 
     //      - They can kick and add users into groups freely.  
     //      - They are the site admins. 
     //
@@ -72,10 +70,8 @@ app.use(express.urlencoded ({
     //      - They can CRUD their own comments 
     //      - They are the normal users of the website. 
 
-
-// Route: Creation of <>
 //    - How to create? What to add in? 
-//    - Regardless, remember to ensure that the sql table (for data) can accept it. 
+//    - Regardless, remember to ensure that the SQL table (for data) can accept it. 
 
 
 // Route: Edit of <>
