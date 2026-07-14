@@ -43,12 +43,14 @@ app.use(express.urlencoded ({
 // Note: Our Theme will be on Food Store
 
 // Assets
-// - 3 sql tables: one for username + password + position + user id
-//                 one for store id, store location, store name, store picture, owner(user id) and comments section id
-//                 one for comments id, comments text, owner(user id), favourites (likes?)
+// - 4 sql tables: one for username + password +  user id + position + group id (if any) 
+//                 one for location id, location name
+//                 one for store id, location id (for the store location), user id (for the owner of the store), store name, store picture and comments section id
+//                 one for messages id, group id, store id, text, date, favourites
+//                 one for comments id, store id, owner(user id),  comments text, likes count
 // - 4 (? may add more) positions. 
 // - Projected pages: Login page, Home page (*display all groups existing + admin messages), Group page (to display data), Adding page, Editing page, 
-//                    Admin's Page (for site mods), Group Owner Page (for group page mods), (? more to be added)
+//                    Admin's Page (for site mods), Group Owner Page (for group page mods), (? more to be added), User Page (for personal mods)
 
 //   - Typically: 
     //    - Site Admins can CRUD everything and grant other users up to Admin permissions. 
@@ -62,7 +64,6 @@ app.use(express.urlencoded ({
     //      - They are the location shop owners (Lot One, Jurong Point etc). 
     //
     //    -  Group Members can CRUD their OWN messages in the group they belong to, and the rest is the same as a group user. 
-    //      - They can invite users to the group, but whether they will enter or not is up to the Group Owner. 
     //      - They are the shop/stall owners (McDonald's, KFC, etc)
     //      - Group members can register for comment removal, but it is up to the group owner to decide whether they want to remove or not. 
     //
@@ -72,7 +73,6 @@ app.use(express.urlencoded ({
     // 
     //    - Non-authorised users can only read, they cannot do anything else. 
 
-//    - How to create? What to add in? 
 //    - Regardless, remember to ensure that the SQL table (for data) can accept it. 
 
 
