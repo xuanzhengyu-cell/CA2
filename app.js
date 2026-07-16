@@ -88,7 +88,54 @@ app.use(express.urlencoded ({
 
 
 // Route: Edit of <>
+// Show the search page with all stalls by default
+app.get('/', (req, res) => {
+  connection.query('SELECT * FROM stores', (err, results) => {
+    if (err) throw err;
+    res.render('results', { stalls: results, filters: {} });
+  });
+});
 
+// Handle search + filters
+app.get('/stalls', (req, res) => {
+  const { search, location, cuisine, rating, price } = req.query;
+
+  // Start with a base query, add conditions only for filters that were used
+  let sql = 'SELECT * FROM stores WHERE 1=1';
+  const values = [];
+
+  if (search) {
+    sql += ' AND (name LIKE ? OR description LIKE ?)';
+    values.push('%' + search + '%', '%' + search + '%');
+  }
+
+  if (location) {
+    sql += ' AND location = ?';
+    values.push(location);
+  }
+
+  if (cuisine) {
+    sql += ' AND cuisine = ?';
+    values.push(cuisine);
+  }
+
+  if (rating) {
+    sql += ' AND rating >= ?';
+    values.push(rating);
+  }
+
+  if (price) {
+    sql += ' AND price_range = ?';
+    values.push(price);
+  }
+
+  // '?' placeholders instead of pasting values straight into the string
+  // is what keeps this safe from SQL injection
+  connection.query(sql, values, (err, results) => {
+    if (err) throw err;
+    res.render('results', { stalls: results, filters: req.query });
+  });
+});
 
 // Route: Delete of <>
 
