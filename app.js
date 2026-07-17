@@ -52,6 +52,8 @@ app.use(flash());
 // =============================================================================================================================
 // Middleware 
 // =============================================================================================================================
+// record
+let logged_in = 0 
 
 // Set Up login, registration, access control 
     // For access control (Check Admin, Check Group Owner + Admin, Check Group Owner + Member + admin)
@@ -133,17 +135,17 @@ const validateRegistration = (req, res, next) => {
 
 // Home page route
 app.get('/', (req, res) => {
-    res.render('home_page', { user: req.session.user, messages: req.flash('success')});
+    res.render('home_page', { user: req.session.user, messages: req.flash('success'), logged_in});
 });
 
     // Route for login
 app.get('/login', (req, res) => {
-    res.render('login', { messages: req.flash('success'), errors: req.flash('error') });
+    res.render('login', { messages: req.flash('success'), errors: req.flash('error'), logged_in });
 });
 
     // Route for registration
 app.get('/register', (req, res) => {
-    res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
+    res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0], logged_in });
 });
 
     // Process login
@@ -166,6 +168,7 @@ app.post('/login', (req, res) => {
             // Successful login
             req.session.user = results[0]; 
             req.flash('success', 'Login successful!');
+            logged_in = 1
             res.redirect('/');
         
         } else {
@@ -192,20 +195,27 @@ app.post('/register',validateRegistration, (req, res) => {
 });
 
 app.get('/profile', (req, res) => {
-    res.render('profile', { user: req.session.user, messages: req.flash('success')});
+    res.render('profile', { user: req.session.user, logged_in});
 });
 
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
+        logged_in = 0
         res.redirect('/');
     });
 });
 
 // =============================================================================================================================
-// Location Group Routes
+// Access to Dashboards Routes
 // =============================================================================================================================
 
+app.get('/admin_dashboard', checkAuthenticated, checkAdmin, (req, res) => {
+    res.render('admin_dashboard', { user: req.session.user, logged_in});
+});
 
+// =============================================================================================================================
+// Location Group Routes
+// =============================================================================================================================
 
 /* 
 // Route: Edit of <>
