@@ -53,7 +53,7 @@ app.use(flash());
 // Middleware 
 // =============================================================================================================================
 // record
-let logged_in = 0 
+let logged_in = false 
 
 // Set Up login, registration, access control 
     // For access control (Check Admin, Check Group Owner + Admin, Check Group Owner + Member + admin)
@@ -168,7 +168,7 @@ app.post('/login', (req, res) => {
             // Successful login
             req.session.user = results[0]; 
             req.flash('success', 'Login successful!');
-            logged_in = 1
+            logged_in = true
             res.redirect('/');
         
         } else {
@@ -225,25 +225,41 @@ app.get('/location/:id/message', checkAuthenticated, checkGOwnerAdminandMember, 
     connection.query(sql, [id], (err, results) => {
         if (err) {
             throw err;
-            res.redirect(`/location/${id}`);
         }
         // Save the credentials into a session cookie
         if (results.length > 0) {
-            const location_name = results[0]; 
+            const location_name = results[0].location_name; 
             const location_id = id
             res.render('message_create', 
                 { user: req.session.user, logged_in, location_id, location_name});
         
         } else {
-            // Invalid credentials
-            req.flash('error', 'Invalid email or password.');
             res.redirect(`/location/${id}`);
         }
     });
-
-    
 });
 
+app.post('/user/:id/comment_create', checkAuthenticated, (req, res) => {
+    const id = parseInt(req.params.id);
+    const {comment} = req.body;
+
+    if (!comment) {
+        req.flash('error', 'Comments cannot be empty');
+        return res.redirect(`/user/${id}`);
+    }
+
+    const owner_id = id
+    const sender_id = req.session.user.user_id
+    
+    const sql = 'INSERT INTO comments (sender_id, owner_id, comments_text) VALUES (?, ?, ?)';
+    connection.query(sql, [sender_id, owner_id, comment], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        console.log(result);
+        res.redirect(`/user/${id}`);
+    });
+});
 // =============================================================================================================================
 // Location Group Routes
 // =============================================================================================================================
