@@ -417,6 +417,78 @@ app.get('/location/edit/:id', checkAuthenticated, locationIDs_Find, checkGOwnerA
 });
 
 
+// edit for location (post)
+app.post('/location/edit/:id', checkAuthenticated, (req, res) => {
+
+    const id = req.params.id;
+    const { location_name } = req.body;
+    const sql = `
+        UPDATE location
+        SET location_name = ?
+        WHERE location_id = ?
+    `;
+
+    connection.query(sql, [location_name, id], (err) => {
+        if (err) throw err;
+
+        req.flash('success', 'Location updated successfully.');
+        res.redirect('/');
+
+    });
+});
+
+
+//edit message (get)
+app.get('/message/edit/:id', checkAuthenticated, (req, res) => {
+
+    const id = req.params.id;
+    const sql = "SELECT * FROM messages WHERE messages_id = ?";
+
+    connection.query(sql, [id], (err, results) => {
+
+        if (err) throw err;
+
+        if (results.length === 0) {
+            req.flash('error', 'Message not found.');
+            return res.redirect('/');
+        }
+
+        res.render('edit_message', {
+            message: results[0],
+            logged_in
+        });
+    });
+});
+
+
+//edit for message (Post)
+app.post('/message/edit/:id', checkAuthenticated, (req, res) => {
+
+    const id = req.params.id;
+    const { location_id, sender_id, text, date, likes } = req.body;
+    const sql = `
+        UPDATE messages
+        SET
+            location_id = ?,
+            sender_id = ?,
+            text = ?,
+            date = ?,
+            likes = ?
+        WHERE messages_id = ?
+    `;
+
+    connection.query(sql, [location_id, sender_id, text, date, likes, id], (err) => {
+
+        if (err) throw err;
+
+        req.flash('success', 'Message updated successfully.');
+        res.redirect('/');
+
+    });
+});
+
+
+
 
 // =============================================================================================================================
 // Route: search for XXX, by YYY
