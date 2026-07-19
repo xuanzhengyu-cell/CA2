@@ -9,7 +9,7 @@
         <li class="nav-item">
           <a class="nav-link" href="/">Home Page</a>
         </li>
-        <% if (location_id.len() != 0) { %>
+        <% if (user != null) { %>
           <% if (user.role === "admin") {%>
             <li class="nav-item">
               <a class="nav-link" href="/admin_dashboard">Admin's Dashboard</a>
@@ -17,7 +17,7 @@
           <% } %>
           <% for (let i = 0; i < location_ids.length; i++) {%>
             <li class="nav-item">
-              <a class="nav-link" href="/location/<% location_ids[i].location_id>"></a>
+              <a class="nav-link" href="/location/<% location_ids[i].location_id%>"></a>
             </li>
           <% } %>
           <li class="nav-item">
