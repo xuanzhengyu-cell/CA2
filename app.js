@@ -305,7 +305,7 @@ app.get('/user/:id/comment_create', checkAuthenticated, (req, res) => {
     connection.query(sql, [id], (err, results) => {
         if (err) throw err;
 
-        res.render('comment_create', {
+        res.render('US_comment_create', {
             user: results[0]
         });
     });
@@ -426,7 +426,7 @@ app.get('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
     
 
 // post of edit_user (may remove the ability to edit ur role based on future discussion.)
-app.post('/profile/edit', checkAuthenticated, (req, res) => {
+app.post('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
     const id = req.params.id;
 
     if (req.session.user.user_id != id && req.session.user.role !== "admin") {
@@ -560,7 +560,7 @@ app.get('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, (req
             return res.redirect('/');
         }
 
-        res.render('edit_comment', {
+        res.render('US_edit_comment', {
             comment: results[0],
             logged_in
         });
