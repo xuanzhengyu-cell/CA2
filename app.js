@@ -478,7 +478,7 @@ app.get('/location/edit/:id', checkAuthenticated, locationIDs_Find, checkGOwnera
 
 
 // edit for location (post)
-app.post('/location/edit/:id', checkAuthenticated, (req, res) => {
+app.post('/location/edit/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
 
     const id = req.params.id;
     const { location_name } = req.body;
@@ -500,7 +500,7 @@ app.post('/location/edit/:id', checkAuthenticated, (req, res) => {
 
 
 //edit message (get)
-app.get('/message/edit/:id', checkAuthenticated, (req, res) => {
+app.get('/message/edit/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
 
     const id = req.params.id;
     const sql = "SELECT * FROM messages WHERE messages_id = ?";
@@ -523,7 +523,7 @@ app.get('/message/edit/:id', checkAuthenticated, (req, res) => {
 
 
 //edit for message (Post)
-app.post('/message/edit/:id', checkAuthenticated, (req, res) => {
+app.post('/message/edit/:id', checkAuthenticated,locationIDs_Find, (req, res) => {
 
     const id = req.params.id;
     const { text } = req.body;
@@ -548,7 +548,7 @@ app.post('/message/edit/:id', checkAuthenticated, (req, res) => {
 
 
 //edit for comments get route
-app.get('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, (req, res) => {
+app.get('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, locationIDs_Find, (req, res) => {
 
     const id = req.params.id;
     const sql = "SELECT * FROM comments WHERE comments_id = ?";
@@ -569,7 +569,7 @@ app.get('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, (req
 
 
 //edit for comment post route
-app.post('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, (req, res) => {
+app.post('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, locationIDs_Find, (req, res) => {
 
     const id = req.params.id;
     const { comments_text } = req.body;
@@ -588,7 +588,7 @@ app.post('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, (re
 });
 
 // Edit Members page- cy
-app.get('/edit_members', checkAuthenticated, checkAdmin, (req, res) => {
+app.get('/edit_members', checkAuthenticated, checkAdmin, locationIDs_Find, (req, res) => {
     res.render('edit_members');
 });
 
@@ -597,11 +597,26 @@ app.get('/edit_members', checkAuthenticated, checkAdmin, (req, res) => {
 // Route: search for XXX, by YYY
 // =============================================================================================================================
 
-app.get('/delete_location/:id', checkAuthenticated, checkAdmin, (req, res) => {
+app.post ('/delete_location/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
     const id = req.params.id;
-    sql = ''
-    res.redirect('/groups');
+    const sql = `DELETE location, messages, users_has_location 
+        FROM location 
+        LEFT JOIN messages ON location.location_id = messages.location_id 
+        LEFT JOIN users_has_location ON location.location_id = users_has_location.location_id
+        WHERE location.location_id = ?
+    `;
+    connection.query (sql, [id],(err) => {
+        if (err) {
+            console.error('Delete failed:', err.message);
+            req.flash('error', 'Cannot delete this location because it is linked to other items.');
+            return res.redirect('/groups');
+        } else {
+            req.flash('success', 'Group deleted successfully.');
+            res.redirect('/groups');
+        }
+    });
 });
+
 
 
 const PORT = process.env.PORT || 3000; 
