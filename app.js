@@ -161,7 +161,7 @@ const validateRegistration = (req, res, next) => {
 app.get('/', locationIDs_Find, (req, res) => {
     const { search } = req.query;
 
-    let sql = 'SELECT * FROM location WHERE 1=1';
+    let sql1 = 'SELECT * FROM location WHERE 1=1';
     const values = [];
 
     if (search) {
@@ -169,9 +169,22 @@ app.get('/', locationIDs_Find, (req, res) => {
         values.push('%' + search + '%');
     }
 
-    connection.query(sql, values, (err, results) => {
-        if (err) throw err;
-        res.render('Home_Page', { locations: results, search: search || '' });
+    connection.query(sql1, values, (err, results) => {
+        if (err) {
+            throw err
+        } else {
+            const locations = results
+            const sql = `
+                SELECT text FROM announcments`
+            connection.query(sql, (err, results) => {
+                if (err) {
+                    console.error('Failed:', err.message);
+                } else {
+                    const announcments = results[0]
+                    res.render('Home_Page', { locations, search: search || '' , announcments}) 
+                }
+            })
+        };
     });
 });
 
@@ -303,8 +316,48 @@ app.post('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
 // =============================================================================================================================
 
 app.get('/admin_dashboard', checkAuthenticated, locationIDs_Find, checkAdmin, (req, res) => {
-    res.render('HP_admin_dashboard', {});
+    const sql = `
+        SELECT text FROM announcments`
+    connection.query(sql, (err, results) => {
+        if (err) {
+            console.error('Failed:', err.message);
+        } else {
+            res.render('HP_admin_dashboard', {announcement: results [0]});
+        }
+    })    
 });
+
+app.post('/announcement', (req, res) => {
+    const {announcement} = req.body
+    const id = 1
+    const sql1 = `
+        UPDATE announcments
+        SET text = ?
+        WHERE announcments_id = ?`
+    connection.query(sql1, [announcement, id], (err) => {
+        if (err) {
+            console.error('Failed:', err.message);
+        } else {
+            res.redirect ('/')
+        }
+    })
+})
+
+app.post('/clear_announcement', (req, res) => {
+    const announcement = ""
+    const id = 1
+    const sql1 = `
+        UPDATE announcments
+        SET text = ?
+        WHERE announcments_id = ?`
+    connection.query(sql1, [announcement, id], (err) => {
+        if (err) {
+            console.error('Failed:', err.message);
+        } else {
+            res.redirect ('/admin_dashboard')
+        }
+    })
+})
 
 // Display all existing location groups
 app.get('/groups', checkAuthenticated, locationIDs_Find, (req, res) => {
@@ -313,10 +366,23 @@ app.get('/groups', checkAuthenticated, locationIDs_Find, (req, res) => {
         if (err) {
             console.error('Failed:', err.message);
         }
-        res.render("AD_groups_lists", {
-            locations: results
-        });
+        res.render("AD_groups_lists", {locations: results});
     });
+})
+
+app.post('/create_location', (req, res) => {
+    const {location_name, image} = req.body
+
+    const sql = `
+        INSERT INTO location (location_name, Images)
+        VALUES (?, ?)`
+    connection.query(sql, [location_name, image], (err) => {
+        if (err) {
+            console.error('Failed:', err.message);
+        } else {
+            res.redirect("/groups")
+        }
+    })
 })
 
 app.post('/delete_location/:id', (req, res) => {
@@ -355,7 +421,7 @@ app.get('/users', checkAuthenticated, locationIDs_Find, (req, res) => {
         if (err) {
             console.error('Failed:', err.message);
         }
-        res.render("AD_users_lists", {user: results});
+        res.render("AD_users_lists", {users: results});
     });
 })
 
@@ -367,7 +433,41 @@ app.post('/admin/changeName/:id', (req, res) => {
         UPDATE users 
         SET username = ?
         WHERE user_id = ?`
-    connection.query(sql, [username, id], (err, results) => {
+    connection.query(sql, [username, id], (err) => {
+        if (err) {
+            console.error('Failed:', err.message)
+        } else {
+            res.redirect("/users")
+        }
+    })
+})
+
+app.post('/admin/changePassword/:id', (req, res) => {
+    const id = parseInt(req.params.id)
+    const {password} = req.body
+
+    const sql = `
+        UPDATE users 
+        SET password = SHA2 (?, 256)
+        WHERE user_id = ?`
+    connection.query(sql, [password, id], (err) => {
+        if (err) {
+            console.error('Failed:', err.message)
+        } else {
+            res.redirect("/users")
+        }
+    })
+})
+
+app.post('/admin/changeRole/:id', (req, res) => {
+    const id = parseInt(req.params.id)
+    const {role} = req.body
+
+    const sql = `
+        UPDATE users 
+        SET role = ?
+        WHERE user_id = ?`
+    connection.query(sql, [role, id], (err) => {
         if (err) {
             console.error('Failed:', err.message)
         } else {
@@ -519,7 +619,7 @@ app.get('/location/edit/:id', checkAuthenticated, locationIDs_Find, checkGOwnera
             const sql = `
                 SELECT users.user_id, users.username 
                 FROM users 
-                LEFT JOIN users_has_location IN users_has_location.user_id = users.user_id
+                LEFT JOIN users_has_location ON users_has_location.user_id = users.user_id
                 WHERE users_has_location.location_id = ?`
             connection.query(sql, [id], (err, results) => {
                 if (err) {

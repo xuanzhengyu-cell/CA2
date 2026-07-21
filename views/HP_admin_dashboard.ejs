@@ -42,6 +42,18 @@
             </div>
         </div>
     </div>
+    <div class="container mt-4">
+        <h3>Create Announcements</h3>
+        <form action="/announcement" method="post">
+            <textarea id="announcement" class="form-control" name="announcement" rows="5" cols="100" placeholder="Enter announcements here"><%= announcement.text%></textarea>
+            <br>
+            <button type="submit" class="btn btn-primary">Announce</button>
+        </form>
+        <br>
+        <form action="/clear_announcement" method="post">
+            <button type="submit" class="btn btn-primary">Clear</button>
+        </form>
+    </div>
 
 </body>
 </html>    

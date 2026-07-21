@@ -9,7 +9,7 @@
 </head>
 <body>
 <%- include ('header/header.ejs') %>
-<div class="container mb-4">
+<div class="container mt-4">
     <div>
         <h1>Edit Members</h1>
     </div>
@@ -25,21 +25,19 @@
                     <th>Delete</th>
                 </tr>
             </thead>
-
-
             <tbody>
-                <% user.forEach(user=> { %>
+                <% users.forEach(user=> { %>
                     
                     <tr>
                         <td>
-                            <form action="/admin/changeName/<%= user.user_id %>">
-                            <input type="text" id="username name="username" class="form-control" placeholder="Username" value="<%= user.username %>" required>
-                            <button type="submit" class="btn btn-success btn-sm mt-2">Update</button>
+                            <form action="/admin/changeName/<%= user.user_id %>" method="POST">
+                                <input type="text" id="username" name="username" class="form-control" placeholder="Username" value="<%= user.username %>" required>
+                                <button type="submit" class="btn btn-success btn-sm mt-2">Update</button>
                             </form>
                         </td>
 
                         <td>
-                            <form action="/admin/changePassword/<%= user.user_id %>">
+                            <form action="/admin/changePassword/<%= user.user_id %>" method="POST">
                             <input type="password" id="password" name="password" class="form-control" placeholder="password" required>
                             <button type="submit" class="btn btn-success btn-sm mt-2">Update</button>
                             </form>
@@ -60,13 +58,13 @@
                         <td>
                             <form action="/admin/changeRole/<%= user.user_id %>" method="POST">
                             <select name="role" class="form-select">
-                                <option value="admin" <%= user.role==="admin" ?"selected ":"" %>>
+                                <option value="admin" <%= users.role==="admin" ?"selected ":"" %>>
                                     Admin
                                 </option>
-                                <option value="group_owner" <%= user.role==="group_owner" ?"selected disabled":"" %> >
+                                <option value="group_owner" <%= user.role==="group_owner" ?"selected ":"" %> disabled>
                                     Group Owner
                                 </option>
-                                <option value="group_member" <%= user.role==="group_member" ?"selected disabled":"" %> >
+                                <option value="group_member" <%= user.role==="group_member" ?"selected ":"" %> disabled>
                                     Group Member
                                 </option>
                                 <option value="normal_user" <%= user.role==="normal_user" ?"selected ":"" %>>
