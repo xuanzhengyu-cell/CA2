@@ -153,11 +153,10 @@ const validateRegistration = (req, res, next) => {
     }
 };
 
-// =============================================================================================================================
-// Home Page + Login + Registration Routes
-// =============================================================================================================================
 
-    // Home page route
+// =============================================================================================================================
+// Login + Registration Routes
+// =============================================================================================================================
 app.get('/', locationIDs_Find, (req, res) => {
     const { search } = req.query;
 
@@ -174,6 +173,12 @@ app.get('/', locationIDs_Find, (req, res) => {
         res.render('Home_Page', { locations: results, search: search || '' });
     });
 });
+
+
+
+// =============================================================================================================================
+// Login + Registration Routes
+// =============================================================================================================================
 
     // Route for login
 app.get('/login', locationIDs_Find, (req, res) => {
@@ -230,162 +235,22 @@ app.post('/register',validateRegistration, (req, res) => {
     });
 });
 
-app.get('/profile', locationIDs_Find, (req, res) => {
-    req.
-    res.render('HP_profile', {});
-});
-
-app.get('/admin_dashboard', checkAuthenticated, locationIDs_Find, checkAdmin, (req, res) => {
-    res.render('HP_admin_dashboard', {});
-});
-
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
         res.redirect('/');
     });
 });
 
-app.get('/location/:id/message', checkAuthenticated, locationIDs_Find, checkGOwnerAdminandMember, (req, res) => {
-    const location_id = parseInt(req.params.id);
-    res.render('GP_message_create', 
-        {});
-});
-
-// =============================================================================================================================
-// Input of data
-// =============================================================================================================================
-
-// Display all existing location groups- added by cy
-app.get('/groups', (req, res) => {
-    const sql = "SELECT * FROM location";
-    connection.query(sql, (err, results) => {
-        if (err) {
-            throw err;
-        }
-        res.render("AD_groups_lists", {
-            locations: results
-        });
-    });
-})
-
-app.get('/user/:id/comment_create', checkAuthenticated, (req, res) => {
-    const id = req.params.id;
-
-    const sql = 'SELECT * FROM users WHERE user_id = ?';
-
-    connection.query(sql, [id], (err, results) => {
-        if (err) throw err;
-
-        res.render('US_comment_create', {
-            user: results[0]
-        });
-    });
-});
-
-app.post('/user/:id/comment_create', checkAuthenticated, (req, res) => {
-    const id = parseInt(req.params.id);
-    const {comment} = req.body;
-
-    if (!comment) {
-        req.flash('error', 'Comments cannot be empty');
-        return res.redirect(`/user/${id}`);
-    }
-
-    const owner_id = id
-    const sender_id = req.session.user.user_id
-    let date = new Date().toISOString().split('T')[0];
-    const sql = 'INSERT INTO comments (sender_id, owner_id, comments_text, date) VALUES (?, ?, ?, ?)';
-    connection.query(sql, [sender_id, owner_id, comment, date], (err, result) => {
-        if (err) {
-            throw err;
-        }
-        console.log(result);
-        res.redirect(`/user/${id}`);
-    });
-});
 
 
 // =============================================================================================================================
-// Location Group Routes
+// Profile Routes
 // =============================================================================================================================
 
-// Get location page (dynamic)
-app.get('/location/:id', locationIDs_Find, (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const sql = 'SELECT * FROM location WHERE location_id = ?';
-    connection.query(sql, [id], (err, results_l) => {
-        if (err) {
-            throw err;
-        } else {
-        let location_name = results_l[0].location_name; 
-        const sql = 'SELECT * FROM messages WHERE location_id = ?';
-        connection.query(sql, [id], (err, results_m) => {
-            if (err) {
-                throw err;
-            } else {
-                let messages = results_m
-                const location_id = id
-                res.render('GP_location', 
-                    { location_id, location_name, messages});
-            }
-        });
-        }
-    });
+app.get('/profile', locationIDs_Find, (req, res) => {
+    req.
+    res.render('HP_profile', {});
 });
-
-// Get list of group members (display + click user to go to their page ONLY)
-app.get('/location_members/:id', locationIDs_Find, (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const sql = 'SELECT * FROM location WHERE location_id = ?';
-    connection.query(sql, [id], (err, results_l) => {
-        if (err) {
-            throw err;
-        } else {
-        let location_name = results_l[0].location_name; 
-        const sql = 'SELECT users.users_id, users.username FROM users_has_location INNER JOIN users ON users_has_location.user_id = users.users_id WHERE location_id = ?';
-        connection.query(sql, [id], (err, results_m) => {
-            if (err) {
-                throw err;
-            } else {
-                let messages = results_m
-                const location_id = id
-                res.render('GP_Group_Members', 
-                    {location_id, location_name, messages});
-            }
-        });
-        }
-    });
-});
-
-// get user page (dynamic)
-app.get('/user/:id', locationIDs_Find, (req, res) => {
-    const id = parseInt(req.params.id);
-    const user_id = id
-    const sql = 'SELECT * FROM users WHERE user_id = ?';
-    connection.query(sql, [user_id], (err, results_l) => {
-        if (err) {
-            throw err;
-        } else {
-        let username = results_l[0].username; 
-        const sql = 'SELECT * FROM comments WHERE owner_id = ?';
-        connection.query(sql, [user_id], (err, results_m) => {
-            if (err) {
-                throw err;
-            } else {
-                let comments = results_m
-                res.render('GP_user', 
-                    {user_id, username, comments});
-            }
-        });
-        }
-    });
-});
-
-// =============================================================================================================================
-// Route: Edit of <>
-// =============================================================================================================================
 
 // Edit of profile
 app.get('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
@@ -402,7 +267,29 @@ app.get('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
         res.render('HP_P_edit_user', {});
     });
 });
-    
+
+
+
+// =============================================================================================================================
+// Admin Dashboard Routes
+// =============================================================================================================================
+
+app.get('/admin_dashboard', checkAuthenticated, locationIDs_Find, checkAdmin, (req, res) => {
+    res.render('HP_admin_dashboard', {});
+});
+
+// Display all existing location groups- added by cy
+app.get('/groups', (req, res) => {
+    const sql = "SELECT * FROM location";
+    connection.query(sql, (err, results) => {
+        if (err) {
+            throw err;
+        }
+        res.render("AD_groups_lists", {
+            locations: results
+        });
+    });
+})
 
 // post of edit_user (may remove the ability to edit ur role based on future discussion.)
 app.post('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
@@ -431,62 +318,77 @@ app.post('/profile/edit', checkAuthenticated, locationIDs_Find, (req, res) => {
     });
 });
 
-
-// edit for location (get)
-app.get('/location/edit/:id', checkAuthenticated, locationIDs_Find, checkGOwnerandAdmin, (req, res) => {
+app.post ('/delete_location/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
     const id = req.params.id;
-    const sql = "SELECT * FROM location WHERE location_id = ?";
-    connection.query(sql, [id], (err, results) => {
-
+    const sql1 = `
+        UPDATE users 
+        INNER JOIN users_has_location ON users_has_location.user_id = users.user_id 
+        SET users.role = "normal_user"
+        where users_has_location.location_id = ?`
+    connection.query (sql1, [id],(err) => {
         if (err) {
-            throw err
+            console.error('Failed:', err.message);
+        }
+    })
 
-        } else if (results.length === 0) {
-            req.flash('error', 'Location not found.');
-            return res.redirect('/');
-
+    const sql2 = `DELETE location, messages, users_has_location 
+        FROM location 
+        LEFT JOIN messages ON location.location_id = messages.location_id 
+        LEFT JOIN users_has_location ON location.location_id = users_has_location.location_id
+        WHERE location.location_id = ?
+    `;
+    connection.query (sql2, [id],(err) => {
+        if (err) {
+            console.error('Failed:', err.message);
         } else {
-            const location = results[0]
-            const sql = `
-                SELECT users.user_id, users.username 
-                FROM users 
-                LEFT JOIN users_has_location IN users_has_location.user_id = users.user_id
-                WHERE users_has_location.location_id = ?`
-            connection.query(sql, [id], (err, results) => {
-                if (err) {
-                    console.error('Failed:', err.message);
-                    req.flash('error', 'Cannot delete this location because it is linked to other items.');
-                    return res.redirect('/groups');
-                } else {
-                    const users = results
-                    res.render('GP_Owner_dashboard', {location, users});
-                }
-            })
+            req.flash('success', 'Group deleted successfully.');
+            res.redirect('/groups');
         }
     });
 });
 
 
-// edit for location (post)
-app.post('/location/edit/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
 
-    const id = req.params.id;
-    const { location_name } = req.body;
-    const sql = `
-        UPDATE location
-        SET location_name = ?
-        WHERE location_id = ?
-    `;
+// =============================================================================================================================
+// Location Route
+// =============================================================================================================================
 
-    connection.query(sql, [location_name, id], (err) => {
-        if (err) throw err;
+// Get location page (dynamic)
+app.get('/location/:id', locationIDs_Find, (req, res) => {
+    const id = parseInt(req.params.id);
 
-        req.flash('success', 'Location updated successfully.');
-        res.redirect('/');
-
+    const sql = 'SELECT * FROM location WHERE location_id = ?';
+    connection.query(sql, [id], (err, results_l) => {
+        if (err) {
+            throw err;
+        } else {
+        let location_name = results_l[0].location_name; 
+        const sql = 'SELECT * FROM messages WHERE location_id = ?';
+        connection.query(sql, [id], (err, results_m) => {
+            if (err) {
+                throw err;
+            } else {
+                let messages = results_m
+                const location_id = id
+                res.render('GP_location', 
+                    { location_id, location_name, messages});
+            }
+        });
+        }
     });
 });
 
+
+
+// =============================================================================================================================
+// Location (Message) Routes
+// =============================================================================================================================
+
+app.get('/location/:id/message', checkAuthenticated, locationIDs_Find, checkGOwnerAdminandMember, (req, res) => {
+    const location_id = parseInt(req.params.id);
+    res.render('GP_message_create', 
+        {});
+});
 
 //edit message (get)
 app.get('/message/edit/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
@@ -534,6 +436,162 @@ app.post('/message/edit/:id', checkAuthenticated,locationIDs_Find, (req, res) =>
 });
 
 
+
+// =============================================================================================================================
+// Location (Members) Routes
+// =============================================================================================================================
+
+// Get list of group members (display + click user to go to their page ONLY)
+app.get('/location_members/:id', locationIDs_Find, (req, res) => {
+    const id = parseInt(req.params.id);
+
+    const sql = 'SELECT * FROM location WHERE location_id = ?';
+    connection.query(sql, [id], (err, results_l) => {
+        if (err) {
+            throw err;
+        } else {
+        let location_name = results_l[0].location_name; 
+        const sql = 'SELECT users.users_id, users.username FROM users_has_location INNER JOIN users ON users_has_location.user_id = users.users_id WHERE location_id = ?';
+        connection.query(sql, [id], (err, results_m) => {
+            if (err) {
+                throw err;
+            } else {
+                let messages = results_m
+                const location_id = id
+                res.render('GP_Group_Members', 
+                    {location_id, location_name, messages});
+            }
+        });
+        }
+    });
+});
+
+
+
+// =============================================================================================================================
+// Location (Dashboard) Routes
+// =============================================================================================================================
+
+// Group owner Dashboard for location (get)
+app.get('/location/edit/:id', checkAuthenticated, locationIDs_Find, checkGOwnerandAdmin, (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM location WHERE location_id = ?";
+    connection.query(sql, [id], (err, results) => {
+
+        if (err) {
+            throw err
+
+        } else if (results.length === 0) {
+            req.flash('error', 'Location not found.');
+            return res.redirect('/');
+
+        } else {
+            const location = results[0]
+            const sql = `
+                SELECT users.user_id, users.username 
+                FROM users 
+                LEFT JOIN users_has_location IN users_has_location.user_id = users.user_id
+                WHERE users_has_location.location_id = ?`
+            connection.query(sql, [id], (err, results) => {
+                if (err) {
+                    console.error('Failed:', err.message);
+                    req.flash('error', 'Cannot delete this location because it is linked to other items.');
+                    return res.redirect('/groups');
+                } else {
+                    const users = results
+                    res.render('GP_Owner_dashboard', {location, users});
+                }
+            })
+        }
+    });
+});
+
+// edit for location (post)
+app.post('/location/edit/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
+
+    const id = req.params.id;
+    const { location_name } = req.body;
+    const sql = `
+        UPDATE location
+        SET location_name = ?
+        WHERE location_id = ?
+    `;
+
+    connection.query(sql, [location_name, id], (err) => {
+        if (err) throw err;
+
+        req.flash('success', 'Location updated successfully.');
+        res.redirect('/');
+
+    });
+});
+
+
+
+// =============================================================================================================================
+// User (Comments) Routes
+// =============================================================================================================================
+
+// get user page (dynamic)
+app.get('/user/:id', locationIDs_Find, (req, res) => {
+    const id = parseInt(req.params.id);
+    const user_id = id
+    const sql = 'SELECT * FROM users WHERE user_id = ?';
+    connection.query(sql, [user_id], (err, results_l) => {
+        if (err) {
+            throw err;
+        } else {
+        let username = results_l[0].username; 
+        const sql = 'SELECT * FROM comments WHERE owner_id = ?';
+        connection.query(sql, [user_id], (err, results_m) => {
+            if (err) {
+                throw err;
+            } else {
+                let comments = results_m
+                res.render('GP_user', 
+                    {user_id, username, comments});
+            }
+        });
+        }
+    });
+});
+
+app.get('/user/:id/comment_create', checkAuthenticated, (req, res) => {
+    const id = req.params.id;
+
+    const sql = 'SELECT * FROM users WHERE user_id = ?';
+
+    connection.query(sql, [id], (err, results) => {
+        if (err) throw err;
+
+        res.render('US_comment_create', {
+            user: results[0]
+        });
+    });
+});
+
+app.post('/user/:id/comment_create', checkAuthenticated, (req, res) => {
+    const id = parseInt(req.params.id);
+    const {comment} = req.body;
+
+    if (!comment) {
+        req.flash('error', 'Comments cannot be empty');
+        return res.redirect(`/user/${id}`);
+    }
+
+    const owner_id = id
+    const sender_id = req.session.user.user_id
+    let date = new Date().toISOString().split('T')[0];
+    const sql = 'INSERT INTO comments (sender_id, owner_id, comments_text, date) VALUES (?, ?, ?, ?)';
+    connection.query(sql, [sender_id, owner_id, comment, date], (err, result) => {
+        if (err) {
+            throw err;
+        }
+        console.log(result);
+        res.redirect(`/user/${id}`);
+    });
+});
+
 //edit for comments get route
 app.get('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, locationIDs_Find, (req, res) => {
 
@@ -554,7 +612,6 @@ app.get('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, loca
     });
 });
 
-
 //edit for comment post route
 app.post('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, locationIDs_Find, (req, res) => {
 
@@ -574,38 +631,8 @@ app.post('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, loc
     });
 });
 
-// =============================================================================================================================
-// Route: search for XXX, by YYY
-// =============================================================================================================================
 
-app.post ('/delete_location/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
-    const id = req.params.id;
-    const sql1 = `
-        UPDATE users 
-        INNER JOIN users_has_location ON users_has_location.user_id = users.user_id 
-        SET users.role = "normal_user"
-        where users_has_location.location_id = ?`
-    connection.query (sql1, [id],(err) => {
-        if (err) {
-            console.error('Failed:', err.message);
-        }
-    })
 
-    const sql2 = `DELETE location, messages, users_has_location 
-        FROM location 
-        LEFT JOIN messages ON location.location_id = messages.location_id 
-        LEFT JOIN users_has_location ON location.location_id = users_has_location.location_id
-        WHERE location.location_id = ?
-    `;
-    connection.query (sql2, [id],(err) => {
-        if (err) {
-            console.error('Failed:', err.message);
-        } else {
-            req.flash('success', 'Group deleted successfully.');
-            res.redirect('/groups');
-        }
-    });
-});
 
 
 
