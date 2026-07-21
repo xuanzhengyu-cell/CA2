@@ -587,6 +587,10 @@ app.post('/comment/edit/:id', checkAuthenticated, checkGOwnerAdminandMember, (re
     });
 });
 
+// Edit Members page- cy
+app.get('/edit_members', checkAuthenticated, checkAdmin, (req, res) => {
+    res.render('edit_members');
+});
 
 
 // =============================================================================================================================
