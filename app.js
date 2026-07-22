@@ -476,6 +476,25 @@ app.post('/admin/changeRole/:id', (req, res) => {
     })
 })
 
+app.post('/admin/deleteUser/:id', (req, res) => {
+    const id = parseInt(req.params.id)
+
+    const sql = `
+        DELETE users, users_has_location, comments, messages
+        FROM users 
+        LEFT JOIN users_has_location ON users.user_id = users_has_location.user_id 
+        LEFT JOIN comments ON comments.owner_id = users.user_id
+        LEFT JOIN messages ON messages.sender_id = users.user_id
+        WHERE users.user_id = ?`
+    connection.query(sql, [id], (err) => {
+        if (err) {
+            console.error('Failed:', err.message)
+        } else {
+            res.redirect("/users")
+        }
+    })
+})
+
 
 
 // =============================================================================================================================
