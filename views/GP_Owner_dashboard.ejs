@@ -49,15 +49,18 @@
                         <td><%= user.username %></td>
 
                         <!-- Role Label -->
-                        <td>
-                            <% if (user.role === "group_owner") { %>
+                        <% if (user.role === "group_owner") { %>
+                            <td>
                                 <h5>Group Owner</h5>
-                            <% } else if (user.role === "group_member") { %>
+                            </td>
+                        <% } else if (user.role === "group_member") { %>
+                            <td>
                                 <h5>Group Member</h5>
-                            <% } else if (user.role === "normal_user") { %>
-                                <span class="badge bg-info">Normal User</span>
-                            <% } %>
-                        </td>
+                            </td>
+                        <% } else if (user.role === "normal_user") { %>
+                            <span class="badge bg-info">Normal User</span>
+                        <% } %>
+                        
 
                         <!-- Change Role -->
                         <td>
