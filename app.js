@@ -524,13 +524,13 @@ app.get('/location/:id', locationIDs_Find, (req, res) => {
     const sql = 'SELECT * FROM location WHERE location_id = ?';
     connection.query(sql, [id], (err, results_l) => {
         if (err) {
-            throw err;
+            console.log(err);
         } else {
         let location_name = results_l[0].location_name; 
         const sql = 'SELECT * FROM messages WHERE location_id = ?';
         connection.query(sql, [id], (err, results_m) => {
             if (err) {
-                throw err;
+                console.log(err);
             } else {
                 let messages = results_m
                 const location_id = id
@@ -626,28 +626,24 @@ app.post('/location/:location_id/message/delete/:message_id', checkAuthenticated
 
 // Get list of group members (display + click user to go to their page ONLY)
 app.get('/location_members/:id', checkAuthenticated, locationIDs_Find, (req, res) => {
-    const id = parseInt(req.params.id);
+    const location_id = parseInt(req.params.id);
 
-    const sql = 'SELECT * FROM location WHERE location_id = ?';
-    connection.query(sql, [id], (err, results_l) => {
+    const sql = 'SELECT location_name FROM location WHERE location_id = ?';
+    connection.query(sql, [location_id], (err, results_l) => {
         if (err) {
-            throw err;
+            console.log (err);
         } else {
         let location_name = results_l[0].location_name; 
         const sql = `
-            SELECT users.users_id, users.username, users_has_location.role
+            SELECT users.user_id, users.username, users_has_location.role
             FROM users_has_location 
-            INNER JOIN users ON users_has_location.user_id = users.users_id 
+            INNER JOIN users ON users_has_location.user_id = users.user_id 
             WHERE location_id = ?`;
-        connection.query(sql, [id], (err, results_m) => {
+        connection.query(sql, [location_id], (err, results_m) => {
             if (err) {
                 console.log (err)
-            } else if (results_l.length === 0) {
-                console.log ("Not available")
-                res.redirect(`/location/${location_id}`)
             } else {
                 let users = results_m
-                const location_id = id
                 res.render('GP_Group_Members', 
                     {location_id, location_name, users});
             }
@@ -665,6 +661,7 @@ app.post ('/request/location/:id', checkAuthenticated, (req, res) => {
     connection.query (sql, [user_id, location_id], (err) =>{
         if (err) {
             console.log (err)
+            res.redirect (`/location_members/${location_id}`)
         } else {
             res.redirect (`/location_members/${location_id}`)
         }
