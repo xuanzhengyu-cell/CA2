@@ -177,7 +177,7 @@ app.post('/login', (req, res) => {
     }
 
     const sql = `
-        SELECT users.user_id, users.role
+        SELECT users.user_id, users.role, users_has_location.group_role
         FROM users 
         INNER JOIN users_has_location ON users_has_location.user_id = users.user_id 
         WHERE users.username = ? AND users.password = SHA2(?, 256)`;
@@ -511,8 +511,27 @@ app.post('/admin/deleteUser/:id', (req, res) => {
 // Location Route
 // =============================================================================================================================
 
+const admin_group_owner_or_member = (req, res, next) => {
+    const user_id = req.session.user?.user_id
+    const location_id = parseInt(req.params.id);
+
+    const sql1 = `
+        SELECT users.role, users_has_location.group_role
+        FROM users 
+        INNER JOIN users_has_location ON users_has_location.user_id = users.user_id
+        WHERE users.user_id = ? AND users_has_location.location_id = ?`
+    connection.query(sql1, [user_id, location_id], (err, result) => {
+        if (err) {
+            console.log (err)
+        } else {
+            req.userRoles = result
+            return next()
+        }
+    })
+};
+
 // Get location page (dynamic)
-app.get('/location/:id', locationIDs_Find, (req, res) => {
+app.get('/location/:id', locationIDs_Find, admin_group_owner_or_member, (req, res) => {
     const id = parseInt(req.params.id);
 
     const sql = 'SELECT * FROM location WHERE location_id = ?';
@@ -529,7 +548,7 @@ app.get('/location/:id', locationIDs_Find, (req, res) => {
                 let messages = results_m
                 const location_id = id
                 res.render('GP_location', 
-                    { location_id, location_name, messages});
+                    { location_id, location_name, messages, userRoles: req.userRoles});
             }
         });
         }
@@ -655,7 +674,7 @@ app.get('/location_members/:id', checkAuthenticated, locationIDs_Find, (req, res
         const sql = `
             SELECT users.user_id, users.username, users_has_location.group_role
             FROM users_has_location 
-            INNER JOIN users ON users_has_location.user_id = users.user_id 
+            LEFT JOIN users ON users_has_location.user_id = users.user_id 
             WHERE location_id = ?`;
         connection.query(sql, [location_id], (err, results_m) => {
             if (err) {
@@ -673,10 +692,11 @@ app.get('/location_members/:id', checkAuthenticated, locationIDs_Find, (req, res
 app.post ('/request/location/:id', checkAuthenticated, (req, res) => {
     const location_id = parseInt(req.params.id);
     const user_id = req.session.user.user_id
+    const group_role = "normal_user"
     const sql = `
         INSERT INTO users_has_location (user_id, location_id, group_role)
-        VALUES (?, ?, "normal_user")`
-    connection.query (sql, [user_id, location_id], (err) =>{
+        VALUES (?, ?, ?)`
+    connection.query (sql, [user_id, location_id, group_role], (err) =>{
         if (err) {
             console.log (err)
             res.redirect (`/location_members/${location_id}`)
@@ -768,7 +788,7 @@ app.post('/location/edit/:location_id/changeRole/:user_id', checkAuthenticated, 
     const sql = `
         UPDATE users_has_location 
         SET group_role = ?
-        WHERE user_id = ?, location_id = ?` 
+        WHERE user_id = ? AND location_id = ?` 
     connection.query (sql, [role, user_id, location_id], (err) => {
         if (err) {
             console.log (err)

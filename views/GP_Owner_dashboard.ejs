@@ -49,16 +49,18 @@
                         <td><%= user.username %></td>
 
                         <!-- Role Label -->
-                        <% if (user.role === "group_owner") { %>
+                        <% if (user.group_role === "group_owner") { %>
                             <td>
                                 <h5>Group Owner</h5>
                             </td>
-                        <% } else if (user.role === "group_member") { %>
+                        <% } else if (user.group_role === "group_member") { %>
                             <td>
                                 <h5>Group Member</h5>
                             </td>
-                        <% } else if (user.role === "normal_user") { %>
-                            <span class="badge bg-info">Normal User</span>
+                        <% } else if (user.group_role === "normal_user") { %>
+                            <td>
+                                <h5>normal_user</h5>
+                            </td>
                         <% } %>
                         
 
@@ -66,13 +68,13 @@
                         <td>
                             <form action="/location/edit/<%= location.location_id %>/changeRole/<%= user.user_id %>" method="POST" class="d-flex gap-2">
                                 <select name="role" class="form-select form-select-sm">
-                                    <option value="group_owner" <%= user.role === "group_owner" ? "selected" : "" %>>
+                                    <option value="group_owner" <%= user.group_role === "group_owner" ? "selected" : "" %>>
                                         Group Owner
                                     </option>
-                                    <option value="group_member" <%= user.role === "group_member" ? "selected" : "" %>>
+                                    <option value="group_member" <%= user.group_role === "group_member" ? "selected" : "" %>>
                                         Group Member
                                     </option>
-                                    <option value="normal_user" <%= user.role === "normal_user" ? "selected" : "" %>>
+                                    <option value="normal_user" <%= user.group_role === "normal_user" ? "selected" : "" %>>
                                         Normal User
                                     </option>
                                 </select>

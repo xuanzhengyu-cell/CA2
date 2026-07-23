@@ -37,11 +37,11 @@
                         </td>
 
                         <td>
-                            <% if (user.role === "group_owner") { %>
+                            <% if (user.group_role === "group_owner") { %>
                                 <h5>Group Owner</h5>
-                            <% } else if (user.role === "group_member") { %>
+                            <% } else if (user.group_role === "group_member") { %>
                                 <h5>Group Member</h5>
-                            <% } else if (user.role === "normal_user") { %>
+                            <% } else if (user.group_role === "normal_user") { %>
                                 <h5>Normal User</h5>
                             <% } %>
                         </td>

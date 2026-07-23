@@ -11,9 +11,18 @@
     <%- include ('header/header.ejs') %>
     <h1><%= location_name %></h1>
 
-    <a href="/location/edit/<%= location_id %>" class="btn btn-warning">Group Owner Dashboard</a>
-    <a href="/location_members/<%= location_id %>" class="btn btn-warning">Stalls at that Location</a>
-    <a href="/location/<%= location_id %>/message" class="btn btn-success"> Add Message </a>
+    <% if (userRoles?.role == "admin" || userRoles?.group_role == "group_owner") { %>
+        <a href="/location/edit/<%= location_id %>" class="btn btn-warning">Group Owner Dashboard</a>
+        <a href="/location_members/<%= location_id %>" class="btn btn-warning">Group Members</a>
+        <a href="/location/<%= location_id %>/message" class="btn btn-success"> Add Message </a>
+
+    <% } else if (userRoles?.group_role == "group_member") { %>
+        <a href="/location_members/<%= location_id %>" class="btn btn-warning">Group Members</a>
+        <a href="/location/<%= location_id %>/message" class="btn btn-success"> Add Message </a>
+        
+    <% } else { %>
+        <a href="/location_members/<%= location_id %>" class="btn btn-warning">Group Members</a>
+    <% } %>
 
     <div class="card">
         <div class="card-body">
