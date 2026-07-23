@@ -413,16 +413,27 @@ app.get('/groups', checkAuthenticated, locationIDs_Find, (req, res) => {
 })
 
 app.post('/create_location', (req, res) => {
-    const {location_name, image} = req.body
+    const {location_name, image, username} = req.body
 
     const sql = `
         INSERT INTO location (location_name, Images)
         VALUES (?, ?)`
-    connection.query(sql, [location_name, image], (err) => {
+    connection.query(sql, [location_name, image], (err, results) => {
         if (err) {
             console.error('Failed:', err.message);
         } else {
-            res.redirect("/groups")
+            const location_id = results.location_id
+            const role = "group_owner"
+            const sql = `
+                INSERT INTO users_has_location (location_id, user_id, role)
+                VALUES (?, ?, ?)`
+            connection.query (sql, [location_id, username, role], (err) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    res.redirect("/groups")
+                }
+            })  
         }
     })
 })
@@ -576,9 +587,7 @@ app.get('/location/:id', locationIDs_Find, (req, res) => {
 
 app.get('/location/:id/message', checkAuthenticated, locationIDs_Find, checkGOwnerAdminandMember, (req, res) => {
     const location_id = parseInt(req.params.id);
-    res.render('GP_message_create', {
-     location_id: location_id
-    });
+    res.render('GP_message_create', {location_id: location_id});
 });
 
 app.post('/location/:id/message', checkAuthenticated, checkGOwnerAdminandMember, (req,res) => {
